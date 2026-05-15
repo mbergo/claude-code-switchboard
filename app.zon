@@ -1,0 +1,32 @@
+.{
+    .id ="dev.zero_native.claude-feature-flag-app",
+    .name ="claude-feature-flag-app",
+    .display_name ="Switchboard",
+    .version = "0.1.0.3",
+    .icons = .{ "assets/icon.icns" },
+    .platforms = .{ "macos", "linux" },
+    .permissions = .{},
+    .capabilities = .{ "webview" },
+    .frontend = .{
+        .dist ="frontend/out",
+        .entry = "index.html",
+        .spa_fallback = true,
+        .dev = .{
+            .url ="http://127.0.0.1:3000/",
+            .command = .{ "npm", "--prefix", "frontend", "run", "dev" },
+            .ready_path = "/",
+            .timeout_ms = 30000,
+        },
+    },
+    .security = .{
+        .navigation = .{
+            .allowed_origins = .{ "zero://app", "zero://inline", "http://127.0.0.1:3000" },
+            .external_links = .{ .action = "deny" },
+        },
+    },
+    .web_engine = "system",
+    .cef = .{ .dir = "third_party/cef/macos", .auto_install = false },
+    .windows = .{
+        .{ .label = "main", .title ="Switchboard", .width = 960, .height = 640, .restore_state = true },
+    },
+}

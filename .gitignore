@@ -1,0 +1,35 @@
+# zig build artifacts
+zig-out/
+.zig-cache/
+
+# frontend
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+
+# editor / backup files
+*.bak.*
+*.bak
+
+# workflow artifacts (not source)
+.breadcrumbs.md
+.fixes.md
+
+# logs
+*.log
+
+# secrets / env
+.env
+.env.*
+
+# temp
+*.tmp
+*.swp
+.*.swo
+
+# vendored binaries
+third_party/cef/
+
+# OS junk
+.DS_Store
+Thumbs.db

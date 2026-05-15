@@ -1,0 +1,169 @@
+{
+  "tools": [
+    {
+      "id": "ast-grep",
+      "name": "ast-grep",
+      "description": "Structural code search & refactor via AST patterns",
+      "manual": {
+        "install": "brew install ast-grep",
+        "usage": [
+          "ast-grep -p 'console.log($A)' --lang ts",
+          "ast-grep -p 'var $X = $Y' -r 'const $X = $Y' --lang js"
+        ],
+        "notes": "Works across 20+ languages via tree-sitter. Patterns look like real code."
+      }
+    },
+    {
+      "id": "ripgrep",
+      "name": "ripgrep (rg)",
+      "description": "Blazing-fast recursive grep, used by Claude Code internally",
+      "manual": {
+        "install": "brew install ripgrep",
+        "usage": [
+          "rg \"pattern\"",
+          "rg -t py \"pattern\"",
+          "rg -i \"pattern\"  # ignore case",
+          "rg -l \"pattern\"  # files only",
+          "rg -A 3 -B 3 \"pattern\"  # context"
+        ],
+        "notes": "Use -t to filter by language. -i ignore case, -l files only, -A/-B for context."
+      }
+    },
+    {
+      "id": "lazygit",
+      "name": "lazygit",
+      "description": "Terminal UI for git — stage, commit, rebase visually",
+      "manual": {
+        "install": "brew install lazygit",
+        "usage": [
+          "lazygit"
+        ],
+        "notes": "Keys: space stage, c commit, P push, p pull, b branches."
+      }
+    },
+    {
+      "id": "difftastic",
+      "name": "difftastic",
+      "description": "AST-aware diff — ignores whitespace/format noise",
+      "manual": {
+        "install": "brew install difftastic",
+        "usage": [
+          "difft a.js b.js",
+          "git config --global diff.external difft"
+        ],
+        "notes": "Set as git's external diff tool to get AST-aware diffs everywhere."
+      }
+    },
+    {
+      "id": "delta",
+      "name": "git-delta",
+      "description": "Syntax-highlighted git diff pager with word-level diffs",
+      "manual": {
+        "install": "brew install git-delta",
+        "usage": [
+          "[core]\n  pager = delta\n[interactive]\n  diffFilter = delta --color-only"
+        ],
+        "notes": "Add the config block to ~/.gitconfig to enable delta as the default pager."
+      }
+    },
+    {
+      "id": "shellcheck",
+      "name": "shellcheck",
+      "description": "Validates shell scripts — catch bugs before they bite",
+      "manual": {
+        "install": "brew install shellcheck",
+        "usage": [
+          "shellcheck script.sh",
+          "# shellcheck disable=SC2086"
+        ],
+        "notes": "Inline disable comments suppress specific lints on the next line."
+      }
+    },
+    {
+      "id": "fzf",
+      "name": "fzf",
+      "description": "Fuzzy finder for files, history, branches",
+      "manual": {
+        "install": "brew install fzf",
+        "usage": [
+          "Ctrl+R  # history",
+          "Ctrl+T  # file",
+          "Alt+C   # cd",
+          "find . | fzf"
+        ],
+        "notes": "Already in apt. Keybindings are set after running fzf install script."
+      }
+    },
+    {
+      "id": "tmux",
+      "name": "tmux",
+      "description": "Terminal multiplexer — pair Claude with logs/server in panes",
+      "manual": {
+        "install": "brew install tmux",
+        "usage": [
+          "tmux               # new session",
+          "Ctrl+b d           # detach",
+          "tmux a             # attach",
+          "Ctrl+b \"           # split horizontal",
+          "Ctrl+b %           # split vertical"
+        ],
+        "notes": "Prefix Ctrl+b precedes every command. Detach to keep sessions alive between SSH connects."
+      }
+    },
+    {
+      "id": "btop",
+      "name": "btop",
+      "description": "Resource monitor — CPU/RAM/disk/network/processes",
+      "manual": {
+        "install": "brew install btop",
+        "usage": [
+          "btop"
+        ],
+        "notes": "Keys: q quit, +/- change update rate, f filter."
+      }
+    },
+    {
+      "id": "gh",
+      "name": "GitHub CLI",
+      "description": "Repos, PRs, issues from terminal",
+      "manual": {
+        "install": "brew install gh",
+        "usage": [
+          "gh auth login",
+          "gh pr create",
+          "gh pr view",
+          "gh pr checkout 123"
+        ],
+        "notes": "Auth once, then PR/issue/repo workflows stay in the terminal."
+      }
+    },
+    {
+      "id": "caveman",
+      "name": "caveman",
+      "description": "Cuts Claude Code output tokens ~65% — talks like caveman, same accuracy",
+      "manual": {
+        "install": "npx -y github:JuliusBrussee/caveman -- --only claude",
+        "usage": [
+          "/caveman           # toggle in Claude Code",
+          "\"caveman mode\"     # natural language toggle",
+          "\"stop caveman\"     # turn off",
+          "\"normal mode\"      # turn off"
+        ],
+        "notes": "Modes: lite / full / ultra. Output tokens drop 60-87% depending on mode."
+      }
+    },
+    {
+      "id": "zero-native",
+      "name": "zero-native",
+      "description": "Zig + WebView app framework — what built this app",
+      "manual": {
+        "install": "npm install -g zero-native",
+        "usage": [
+          "zero-native init my_app --frontend next",
+          "zig build run"
+        ],
+        "notes": "Engines: system WebView (small binary) or CEF/Chromium (consistent rendering)."
+      }
+    }
+  ]
+}
