@@ -36,14 +36,21 @@ jobs:
           cache: npm
           cache-dependency-path: frontend/package-lock.json
 
+      - name: Install zero-native
+        run: npm install -g zero-native
+
+      - name: Resolve zero-native path
+        id: zn
+        run: echo "path=$(npm root -g)/zero-native" >> "$GITHUB_OUTPUT"
+
       - name: Install frontend dependencies
         run: npm ci --prefix frontend
 
       - name: Build frontend
-        run: zig build frontend-build
+        run: zig build frontend-build -Dzero-native-path=${{ steps.zn.outputs.path }}
 
       - name: Build project
-        run: zig build
+        run: zig build -Dzero-native-path=${{ steps.zn.outputs.path }}
 
       - name: Cache Zig build artifacts
         uses: actions/cache@v4
@@ -74,11 +81,18 @@ jobs:
           cache: npm
           cache-dependency-path: frontend/package-lock.json
 
+      - name: Install zero-native
+        run: npm install -g zero-native
+
+      - name: Resolve zero-native path
+        id: zn
+        run: echo "path=$(npm root -g)/zero-native" >> "$GITHUB_OUTPUT"
+
       - name: Install frontend dependencies
         run: npm ci --prefix frontend
 
       - name: Run tests
-        run: zig build test
+        run: zig build test -Dzero-native-path=${{ steps.zn.outputs.path }}
 
   lint:
     runs-on: ubuntu-latest
@@ -94,6 +108,8 @@ jobs:
         uses: actions/setup-node@v5
         with:
           node-version: '20'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
 
       - name: Install frontend dependencies
         run: npm ci --prefix frontend
@@ -102,4 +118,5 @@ jobs:
         run: shellcheck scripts/bump-build.sh
 
       - name: Type check TypeScript
-        run: npm --prefix frontend exec -- tsc --noEmit
+        working-directory: frontend
+        run: npx tsc --noEmit
