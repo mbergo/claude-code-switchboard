@@ -90,7 +90,7 @@ fn runMacos(app: zero_native.App, options: RunOptions, init: std.process.Init) !
     var buffers: StateBuffers = undefined;
     var app_info = options.appInfo();
     const store = prepareStateStore(init.io, init.environ_map, &app_info, &buffers);
-    var mac_platform = try zero_native.platform.macos.MacPlatform.initWithOptions(zero_native.geometry.SizeF.init(720, 480), webEngine(), app_info);
+    var mac_platform = try zero_native.platform.macos.MacPlatform.initWithOptions(zero_native.geometry.SizeF.init(960, 640), webEngine(), app_info);
     defer mac_platform.deinit();
     var trace_sink = StdoutTraceSink{};
     var log_buffers: zero_native.debug.LogPathBuffers = .{};
@@ -125,7 +125,7 @@ fn runLinux(app: zero_native.App, options: RunOptions, init: std.process.Init) !
     var buffers: StateBuffers = undefined;
     var app_info = options.appInfo();
     const store = prepareStateStore(init.io, init.environ_map, &app_info, &buffers);
-    var linux_platform = try zero_native.platform.linux.LinuxPlatform.initWithOptions(zero_native.geometry.SizeF.init(720, 480), webEngine(), app_info);
+    var linux_platform = try zero_native.platform.linux.LinuxPlatform.initWithOptions(zero_native.geometry.SizeF.init(960, 640), webEngine(), app_info);
     defer linux_platform.deinit();
     var trace_sink = StdoutTraceSink{};
     var log_buffers: zero_native.debug.LogPathBuffers = .{};
@@ -160,7 +160,7 @@ fn runWindows(app: zero_native.App, options: RunOptions, init: std.process.Init)
     var buffers: StateBuffers = undefined;
     var app_info = options.appInfo();
     const store = prepareStateStore(init.io, init.environ_map, &app_info, &buffers);
-    var windows_platform = try zero_native.platform.windows.WindowsPlatform.initWithOptions(zero_native.geometry.SizeF.init(720, 480), webEngine(), app_info);
+    var windows_platform = try zero_native.platform.windows.WindowsPlatform.initWithOptions(zero_native.geometry.SizeF.init(960, 640), webEngine(), app_info);
     defer windows_platform.deinit();
     var trace_sink = StdoutTraceSink{};
     var log_buffers: zero_native.debug.LogPathBuffers = .{};
@@ -211,11 +211,14 @@ const StateBuffers = struct {
 };
 
 fn prepareStateStore(io: std.Io, env_map: *std.process.Environ.Map, app_info: *zero_native.AppInfo, buffers: *StateBuffers) ?zero_native.window_state.Store {
+    app_info.main_window.default_frame = zero_native.geometry.RectF.init(0, 0, 960, 640);
     const paths = zero_native.window_state.defaultPaths(&buffers.state_dir, &buffers.file_path, app_info.bundle_id, zero_native.debug.envFromMap(env_map)) catch return null;
     const store = zero_native.window_state.Store.init(io, paths.state_dir, paths.file_path);
     if (app_info.main_window.restore_state) {
         if (store.loadWindow(app_info.main_window.label, &buffers.read) catch null) |saved| {
-            app_info.main_window.default_frame = saved.frame;
+            if (saved.frame.width >= 100 and saved.frame.height >= 100) {
+                app_info.main_window.default_frame = saved.frame;
+            }
         }
     }
     return store;

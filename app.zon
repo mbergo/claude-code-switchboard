@@ -2,7 +2,7 @@
     .id ="dev.zero_native.claude-feature-flag-app",
     .name ="claude-feature-flag-app",
     .display_name ="Switchboard",
-    .version = "0.1.0.3",
+    .version = "0.1.0.4",
     .icons = .{ "assets/icon.icns" },
     .platforms = .{ "macos", "linux" },
     .permissions = .{},
