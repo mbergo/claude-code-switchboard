@@ -1,0 +1,154 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version override (e.g. 0.1.0). Defaults to content of VERSION file.'
+        required: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  release-linux-x86:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Resolve version
+        id: ver
+        run: |
+          if [ "${{ github.event_name }}" = "push" ]; then
+            VERSION="${GITHUB_REF#refs/tags/v}"
+          elif [ -n "${{ inputs.version }}" ]; then
+            VERSION="${{ inputs.version }}"
+          else
+            VERSION="$(tr -d '[:space:]' < VERSION)"
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          # RPM versions must not contain hyphens; replace with dots
+          echo "rpm_version=${VERSION//-/.}" >> "$GITHUB_OUTPUT"
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libgtk-4-dev \
+            libwebkitgtk-6.0-dev \
+            ruby \
+            ruby-dev \
+            rpm \
+            squashfs-tools
+          sudo gem install --no-document fpm
+
+      - name: Setup Zig
+        uses: mlugg/setup-zig@v2
+        with:
+          version: 0.16.0
+
+      - name: Setup Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install zero-native
+        run: npm install -g zero-native
+
+      - name: Resolve zero-native path
+        id: zn
+        run: echo "path=$(npm root -g)/zero-native" >> "$GITHUB_OUTPUT"
+
+      - name: Install frontend dependencies
+        run: npm ci --prefix frontend
+
+      - name: Build frontend
+        run: zig build frontend-build -Dzero-native-path=${{ steps.zn.outputs.path }}
+
+      - name: Build project (x86_64-linux)
+        run: zig build -Dzero-native-path=${{ steps.zn.outputs.path }}
+
+      - name: Stage package tree
+        run: |
+          mkdir -p pkg-root/usr/bin
+          mkdir -p pkg-root/usr/share/applications
+          mkdir -p pkg-root/usr/share/icons/hicolor/256x256/apps
+
+          install -m 0755 zig-out/bin/claude-feature-flag-app \
+            pkg-root/usr/bin/switchboard
+
+          cat > pkg-root/usr/share/applications/switchboard.desktop << 'EOF'
+          [Desktop Entry]
+          Name=Switchboard
+          Comment=Claude Code CLI toolkit dashboard
+          Exec=switchboard
+          Icon=switchboard
+          Terminal=false
+          Type=Application
+          Categories=Development;Utility;
+          StartupWMClass=claude-feature-flag-app
+          EOF
+
+          install -m 0644 assets/icon.png \
+            pkg-root/usr/share/icons/hicolor/256x256/apps/switchboard.png
+
+      - name: Build .deb (amd64)
+        run: |
+          VERSION="${{ steps.ver.outputs.version }}"
+          fpm \
+            --input-type dir \
+            --output-type deb \
+            --name switchboard \
+            --version "$VERSION" \
+            --architecture amd64 \
+            --description "Claude Code CLI toolkit dashboard" \
+            --url "https://github.com/${{ github.repository }}" \
+            --maintainer "Switchboard Contributors" \
+            --depends "libgtk-4-1" \
+            --depends "libwebkitgtk-6.0-4 | libwebkit2gtk-6.0-4" \
+            --package "switchboard_${VERSION}_amd64.deb" \
+            --chdir pkg-root \
+            usr
+
+      - name: Build .rpm (x86_64)
+        run: |
+          RPM_VERSION="${{ steps.ver.outputs.rpm_version }}"
+          fpm \
+            --input-type dir \
+            --output-type rpm \
+            --name switchboard \
+            --version "$RPM_VERSION" \
+            --architecture x86_64 \
+            --description "Claude Code CLI toolkit dashboard" \
+            --url "https://github.com/${{ github.repository }}" \
+            --maintainer "Switchboard Contributors" \
+            --depends "gtk4" \
+            --depends "webkitgtk6.0" \
+            --package "switchboard-${RPM_VERSION}-1.x86_64.rpm" \
+            --chdir pkg-root \
+            usr
+
+      - name: List artifacts
+        run: ls -lh switchboard*.deb switchboard*.rpm
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.ver.outputs.version }}
+          name: Switchboard ${{ steps.ver.outputs.version }}
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+          files: |
+            switchboard*.deb
+            switchboard*.rpm
